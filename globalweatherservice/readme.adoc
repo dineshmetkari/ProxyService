@@ -1,0 +1,72 @@
+# REST proxy for SOAP Service
+Developed by Dinesh Metkari dineshmetkari@gmail.com
+This service is designed using Spring Rest Microservices, Apache Camel.
+Components used:
+Spring Boot - Rest and Microservice 
+Spring Annotation - Annotation
+Spring AOP - Logging
+Apache Camel - Rest Proxy
+Swagger - documentation
+
+### How to Run 
+
+Minimum requirements:
+JDK 1.8
+Maven 3.x
+
+mvn clean package 
+cd globalweatherservice
+mvn spring-boot:run 
+
+
+
+### Returns the  information about system health, configurations, etc.
+http://localhost:port/health
+http://localhost:port/info
+http://localhost:port/metrics
+http://localhost:port/env
+
+### Service Call 
+1. From command prompt:
+curl -H "Content-Type: application/json" -X POST http://localhost:8080/v1/globalweather/GetCitiesByCountry -d "{\"name\":\"india\"}"
+
+2. From Postman:
+
+POST /v1/globalweather/GetCitiesByCountry
+Accept: application/json
+Content-Type: application/json
+
+{
+    "name":"uk"
+ }
+
+RESPONSE: 
+Return json format reposne data
+
+
+# Docker
+
+docker build -t proxyservice:latest .
+
+sudo docker run -d -v /tmp:/tmp -p 8080:8080  --name dineshproxyservice proxyservice
+
+
+
+
+
+# Additional features to be implemented
+
+# Consul
+Used for
+Service Discory, Health Checking, Multidatacenter, DevOps
+
+# Central Configration Service
+for central configuration which is shared across other services
+
+# DevOps
+Automated CI & CD using Jenkins, Vagrant, Ansible, Selenium Testing etc.
+
+
+
+
+
