@@ -71,8 +71,9 @@ sudo docker run -d -v /tmp:/tmp -p 8080:8080  --name dineshproxyservice proxyser
 
 # Additional features to be implemented
 
-# Consul
-Used for
+# Consul https://www.consul.io/api/agent.html
+
+Used for:
 Service Discory, Health Checking, Multidatacenter, DevOps
 
 # Central Configration Service
