@@ -1,20 +1,14 @@
 
 package com.bay.webservicex.api.rest;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,11 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.w3c.dom.Document;
 
 import com.bay.webservicex.pojo.Country;
-import com.bay.webservicex.utility.parser.Parser;
-import com.bay.webservicex.utility.parser.helpers.DomHelper;
+import com.bay.webservicex.pojo.Weather;
+import com.bay.webservicex.utility.parser.soaptojson.Parser;
+import com.bay.webservicex.utility.parser.soaptojson.helpers.DomHelper;
+import com.bay.webservicex.utility.soapmanipulator.SOAPServiceManipulator;
 import com.google.gson.Gson;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
 
 /**
  * @Class WeatherController This is controller class for handling all the API
@@ -44,97 +38,128 @@ import com.wordnik.swagger.annotations.ApiOperation;
  */
 @RestController
 @RequestMapping(value = "/v1/globalweather")
-@Api(value = "Weather", description = "Weather API")
+// @Api(value = "Weather", description = "Weather API")
 public class WeatherController {
 
-	@Value("${service.domain.name}")
-	private String domainName;
+	// Configurable parameters for Operation1
+	@Value("${operation1.wsdl.url}")
+	private String wsdlURL;
 
+	@Value("${operation1.localpart}")
+	private String localPart;
+
+	@Value("${operation1.soapaction}")
+	private String soapAction;
+
+	@Value("${operation1.elementName1}")
+	private String elementName;
+	
+	@Value("${operation1.elementValue1}")
+	private String elementValue;
+	
+	@Value("${operation1.response.json_1.xml_0}")
+	private int responseFormat;
+	
+	// Configurable parameters for Operation2
+	@Value("${operation2.wsdl.url}")
+	private String wsdlURL2;
+
+	@Value("${operation2.localpart}")
+	private String localPart2;
+
+	@Value("${operation2.soapaction}")
+	private String soapAction2;
+
+	@Value("${operation2.elementName1}")
+	private String operation2_elementName1;
+	
+	@Value("${operation2.elementValue1}")
+	private String operation2_elementValue1;
+	
+	@Value("${operation2.elementName2}")
+	private String operation2_elementName2;
+	
+	@Value("${operation2.elementValue2}")
+	private String operation2_elementValue2;
+	
+	@Value("${operation2.response.json_1.xml_0}")
+	private int responseFormat2;
+	
+	
+	private static final Logger logger = LoggerFactory.getLogger(WeatherController.class);
+
+	
 	private static final Parser.WhitespaceBehaviour COMPACT_WHITE_SPACE = Parser.WhitespaceBehaviour.Preserve;
-	
-	@RequestMapping(value = "/GetCitiesByCountry", method = RequestMethod.POST)
-	 @ApiOperation(value = "Get Cities By Country using POST.", notes = "Returns the resposne in json format")
-	public ResponseEntity<String> citiesByCountry(@RequestBody Country country, HttpServletRequest request)
-			throws Exception {
-
-		String URLString = generateServiceOperationName(country.getName(), request);
-		StringBuilder finalOutput = new StringBuilder();
-
-		try {
-			HttpClient client = HttpClientBuilder.create().build();
-			HttpPost post = new HttpPost(URLString);
-			HttpGet get = new HttpGet(URLString);
-
-			HttpResponse response;
-			response = client.execute(get);
-
-			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				System.out.println(line);
-				finalOutput.append(line);
-			}
-		} catch (ClientProtocolException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	
-		return new ResponseEntity<String>(convertXMLtoJSON(finalOutput.toString()), HttpStatus.OK);
-	}
-
-	@GetMapping(value = "/GetCitiesByCountry/{name}")
-	 @ApiOperation(value = "Get Cities By Country using GET.", notes = "Returns the resposne in json format")
-	public Map<String, String> getCitiesByCountry(@PathVariable("name") String name) {
-
-	
-		String URLString = domainName + "/GetCitiesByCountry?CountryName=" + name;
-		StringBuilder finalOutput = new StringBuilder();
-
-		try {
-			HttpClient client = HttpClientBuilder.create().build();
-			HttpPost post = new HttpPost(URLString);
-			HttpGet get = new HttpGet(URLString);
-
-			HttpResponse response;
-			response = client.execute(get);
-
-			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				System.out.println(line);
-				finalOutput.append(line);
-			}
-		} catch (ClientProtocolException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return Collections.singletonMap("name", convertXMLtoJSON(finalOutput.toString()));
-	}
 
 	/**
-	 * Generate Service Operation
-	 * 
-	 * @param countryName
+	 * GetCitiesByCountry API with POST request
+	 * @param country
 	 * @param request
 	 * @return
+	 * @throws Exception
 	 */
-	private String generateServiceOperationName(String countryName, HttpServletRequest request) {
-		String requestUI = request.getRequestURI();
-		String operationName = requestUI.substring(requestUI.lastIndexOf("/"), requestUI.length());
-		return domainName + operationName + "?CountryName=" + countryName;
+	@RequestMapping(value = "/GetCitiesByCountry", method = RequestMethod.POST)
+	// @ApiOperation(value = "Get Cities By Country using POST.", notes =
+	// "Returns the resposne in json format")
+	public ResponseEntity<String> getCitiesByCountry(@RequestBody Country country, HttpServletRequest request)
+			throws Exception {
 
+		HashMap<String, String> parametersMap = new HashMap<String, String>();
+		elementValue=country.getName();
+		parametersMap.put(elementName, elementValue);
+		
+		logger.debug("WSDLURL:" + wsdlURL + "\nLocalPart"+ localPart +"\nSOAPOperation"+ soapAction + "\nElementName:"+ elementName + "\nElementValue:"+ elementValue+ "\nResponseFormat:"+responseFormat);
+		SOAPServiceManipulator soapServiceManipulator = new SOAPServiceManipulator();
+		String response = soapServiceManipulator.invokeSOAPService(wsdlURL, localPart, soapAction, parametersMap);
+		
+		// If responseFormat is 1 then covert SOAP to JSON
+		if (responseFormat==1) {
+			response=convertXMLtoJSON(response.toString());
+			
+		}
+		logger.debug("Response:\n"+response);
+		return new ResponseEntity<String>(response.toString(), HttpStatus.OK);
 	}
 
+
+	/**
+	 * GetCitiesByCountry API with GET request.
+	 * 
+	 * @param countryName
+	 * @return
+	 * @throws Exception
+	 */
+	@GetMapping(value = "/GetCitiesByCountry/{countryName}")
+	// @ApiOperation(value = "Get Cities By Country using GET.", notes =
+	// "Returns the resposne in json format")
+	public Map<String, String> getCitiesByCountry(@PathVariable("countryName") String countryName) throws Exception {
+
+		HashMap<String, String> parametersMap = new HashMap<String, String>();
+		elementValue=countryName;
+		parametersMap.put(elementName, elementValue);
+			
+		
+		logger.debug("WSDLURL:" + wsdlURL + "\nLocalPart"+ localPart +"\nSOAPOperation"+ soapAction + "\nElementName:"+ elementName + "\nElementValue:"+ elementValue+ "\nResponseFormat:"+responseFormat);
 	
-/**
- * Converts XML to JSON
- * @param xml
- * @return
- */
+		SOAPServiceManipulator soapServiceManipulator = new SOAPServiceManipulator();
+		String response = soapServiceManipulator.invokeSOAPService(wsdlURL, localPart, soapAction, parametersMap);
+		
+			
+		if (responseFormat==1) {
+			response=convertXMLtoJSON(response.toString());
+			
+		}
+		logger.debug("Response:\n"+response);
+		return Collections.singletonMap("response", response.toString());
+	}
+
+
+	/**
+	 * Converts XML to JSON
+	 * 
+	 * @param xml
+	 * @return
+	 */
 	private String convertXMLtoJSON(String xml) {
 
 		// Parse XML to DOM
@@ -151,11 +176,38 @@ public class WeatherController {
 			System.out.println(json);
 			return json;
 		} catch (Exception e) {
-			//TODO exception flow
+			// TODO exception flow
 			e.printStackTrace();
 			return e.getMessage();
 		}
 
 	}
+	
+	@RequestMapping(value = "/GetWeather", method = RequestMethod.POST)
+	// @ApiOperation(value = "Get Cities By Country using POST.", notes =
+	// "Returns the resposne in json format")
+	public ResponseEntity<String> getWeather(@RequestBody Weather weather, HttpServletRequest request)
+			throws Exception {
+
+		operation2_elementValue1=weather.getCityName();
+		operation2_elementValue2=weather.getCountryName();
+		HashMap<String, String> parametersMap = new HashMap<String, String>();
+		parametersMap.put(operation2_elementName1, operation2_elementValue1);
+		parametersMap.put(operation2_elementName2, operation2_elementValue2);
+		
+		
+		logger.debug("WSDLURL:" + wsdlURL2 + "\nLocalPart"+ localPart2 +"\nSOAPOperation"+ soapAction2 + "\nElementName1:"+ operation2_elementName1 + "\nElementValue1:"+ operation2_elementValue1 + "\nElementName2:"+ operation2_elementName2 + "\nElementValue2:"+ operation2_elementValue2+ "\nResponseFormat:"+responseFormat2);
+		SOAPServiceManipulator soapServiceManipulator = new SOAPServiceManipulator();
+		String response = soapServiceManipulator.invokeSOAPService(wsdlURL2, localPart2, soapAction2, parametersMap);
+		
+		// If responseFormat is 1 then covert SOAP to JSON
+		if (responseFormat==1) {
+			response=convertXMLtoJSON(response.toString());
+			
+		}
+		logger.debug("Response:\n"+response);
+		return new ResponseEntity<String>(response.toString(), HttpStatus.OK);
+	}
+
 
 }

@@ -1,14 +1,15 @@
 package com.bay.webservicex.api.docs;
-
-import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
-import com.mangofactory.swagger.plugin.EnableSwagger;
-import com.mangofactory.swagger.plugin.SwaggerSpringMvcPlugin;
-import com.wordnik.swagger.model.ApiInfo;
-import org.springframework.beans.factory.annotation.Autowired;
+/*
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+*/
 /**
  * @Class SwaggerConfig
  * 
@@ -17,36 +18,34 @@ import org.springframework.context.annotation.Configuration;
  * @since 2018-02-18
  * 
  */
-@Configuration
-@EnableSwagger
-@ComponentScan("com.bay.webservicex")
+//@Configuration
+//@EnableSwagger2
 public class SwaggerConfig {
-
-    public static final String DEFAULT_INCLUDE_PATTERNS = "/bay/*";
-
-    private SpringSwaggerConfig springSwaggerConfig;
-
-    @Autowired
-    public void setSpringSwaggerConfig(SpringSwaggerConfig springSwaggerConfig) {
-        this.springSwaggerConfig = springSwaggerConfig;
-    }
-
-    @Bean 
-    public SwaggerSpringMvcPlugin customImplementation() {
-        return new SwaggerSpringMvcPlugin(this.springSwaggerConfig)
+    /*
+	@Bean
+    public Docket api() {
+		
+        return new Docket(DocumentationType.SWAGGER_2).groupName("users-public-api")
+                .select()
+                .apis(RequestHandlerSelectors.any())
+                .paths(PathSelectors.any())
+                .build()
+                .pathMapping("/")
                 .apiInfo(apiInfo())
-                .includePatterns(DEFAULT_INCLUDE_PATTERNS);
+                .enableUrlTemplating(false);
     }
 
     private ApiInfo apiInfo() {
         ApiInfo apiInfo = new ApiInfo(
-                "GlobalWeather REST APIs",
-                "The APIs are under open source licence",
-                "http://opensource.org/licenses/MIT",
-                "dineshmetkari@gmail.com",
-                "BAY",
-                "http://opensource.org/licenses/MIT"
-        );
+                "GlobalWeather REST API",
+                "GlobalWeather Project API.",
+                "API 1.0",
+                "No restrictions",
+                new Contact("Dinesh Metkari", "", "dineshmetkari@gmail.com"),
+                "No restrictions",
+                "");
         return apiInfo;
     }
+   */
+    
 }

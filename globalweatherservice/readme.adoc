@@ -42,7 +42,7 @@ http://localhost:port/env
 1. From command prompt:
 
 curl -H "Content-Type: application/json" -X POST http://localhost:8080/v1/globalweather/GetCitiesByCountry -d "{\"name\":\"india\"}"
-
+curl -H "Content-Type: application/json" -X POST http://localhost:8080/v1/globalweather/GetWeather -d "{\"cityName\":\"mumbai\",\"countryName\":\"india\"}"
 
 
 2. From Postman:
