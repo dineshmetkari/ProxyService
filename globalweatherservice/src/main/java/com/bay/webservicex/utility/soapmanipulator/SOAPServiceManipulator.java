@@ -61,10 +61,14 @@ public class SOAPServiceManipulator {
 
 		String endPointUrl = wsdlURL.substring(0, wsdlURL.indexOf("?"));
 		SoapClient client = SoapClient.builder().endpointUri(endPointUrl).build();
-		logger.debug("SOAPRequest:\n" + request);
+		logger.debug("SOAPRequest Original:\n" + request);
 		request = modifySoapRequest(request, parametersMap);
 		logger.debug("SOAPRequest Modified:\n" + request);
 		String response = client.post(soapAction, request);
+		
+		logger.debug("SOAPResponse Original:\n" + response);
+		response  = modifySoapResponse(response,soapAction);
+		logger.debug("SOAPResponse Modified:\n" + response);
 		return response;
 	}
 
@@ -82,6 +86,49 @@ public class SOAPServiceManipulator {
 		return builder.parse(is);
 	}
 
+	/**
+	 * Logic to extract json response and eliminate soap tags
+	 * 
+	 * @param soapRequest
+	 * @param parametersMap
+	 * @return
+	 */
+	private String modifySoapResponse(String response, String soapAction) {
+		response = response.replaceAll("&lt;", "<");
+		response = response.replaceAll("&gt;", ">");
+		String resultTag = soapAction.substring(soapAction.lastIndexOf("/")+1,soapAction.length());
+		resultTag = resultTag + "Result>";
+		if (response.indexOf(resultTag) != -1) {
+			response = response.substring(response.indexOf(resultTag)+resultTag.length(), response.lastIndexOf(resultTag)-2);
+		}
+		resultTag = "<NewDataSet>";
+		response = removeStartTag(response,resultTag);
+		resultTag = "</NewDataSet>";
+		response = removeEngTag(response,resultTag); 
+		resultTag = "<NewDataSet />";
+		response = removeEngTag(response,resultTag); 
+		
+	
+		
+		response=response.trim();		
+		return response;
+	}
+	
+	private String removeStartTag(String response, String resultTag){
+		if (response.indexOf(resultTag) != -1) {
+			response = response.substring(response.indexOf(resultTag)+resultTag.length(), response.length());
+		}
+		return response;
+	}
+	
+	private String removeEngTag(String response, String resultTag){
+		if (response.indexOf(resultTag) != -1) {
+			response = response.substring(0, response.indexOf(resultTag));
+		}
+		return response;
+	}
+	
+	
 	/**
 	 * Modifies the mentioned elementName value inside SOAP request.
 	 * 
