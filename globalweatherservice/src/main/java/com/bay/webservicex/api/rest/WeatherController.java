@@ -200,7 +200,6 @@ public class WeatherController {
 		}
 		JSONObject xmlJSONObj = XML.toJSONObject(xml);
 		String jsonPrettyPrintString = xmlJSONObj.toString(PRETTY_PRINT_INDENT_FACTOR);
-		System.out.println("PRINTING STRING :::::::::::::::::::::" + jsonPrettyPrintString);
 		if (jsonPrettyPrintString.length() <= 2) {
 			jsonPrettyPrintString = xml;
 		}
